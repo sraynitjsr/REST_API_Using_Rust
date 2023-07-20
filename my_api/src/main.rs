@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate rocket;
 
 use rocket::http::Status;
@@ -62,21 +63,46 @@ fn delete_user(email: &str, state: &State<AppState>) -> Status {
     }
 }
 
+#[post("/users", data = "<user>")]
+fn create_user(user: Json<User>, state: &State<AppState>) -> Status {
+    let mut users = state.users.clone();
+
+    // Check if the email already exists
+    if users.iter().any(|u| u.email == user.email) {
+        return Status::Conflict;
+    }
+
+    // Find the highest user ID to generate a new unique ID
+    let max_id = users.iter().map(|u| u.id).max().unwrap_or(0);
+    let new_user_id = max_id + 1;
+
+    let new_user = User {
+        id: new_user_id,
+        name: user.name.clone(),
+        email: user.email.clone(),
+    };
+
+    users.push(new_user);
+    state.users = users;
+    Status::Created
+}
+
+#[launch]
 fn rocket() -> _ {
     let users = vec![
         User {
             id: 1,
-            name: String::from("Ray),
-            email: String::from("Ray007@example.com"),
+            name: String::from("Subhradeep Ray"),
+            email: String::from("Ray001@example.com"),
         },
         User {
             id: 2,
-            name: String::from("Subhradeep Ray"),
-            email: String::from("Tufan@example.com"),
+            name: String::from("Tufan Ray"),
+            email: String::from("Tufan001@example.com"),
         },
     ];
 
     rocket::build()
         .manage(AppState { users })
-        .mount("/", routes![index, get_users, update_user, delete_user])
+        .mount("/", routes![index, get_users, update_user, delete_user, create_user])
 }
