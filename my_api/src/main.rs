@@ -1,10 +1,7 @@
 extern crate rocket;
 
-#[get("/")]
-fn hello() -> &'static str {
-    "Hello, World!"
-}
+mod controller;
 
 fn main() {
-    rocket::ignite().mount("/", routes![hello]).launch();
+    rocket::ignite().mount("/", routes![controller::hello]).launch();
 }
