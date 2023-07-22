@@ -3,5 +3,5 @@ extern crate rocket;
 mod controller;
 
 fn main() {
-    rocket::ignite().mount("/", routes![controller::hello]).launch();
+    rocket::ignite().mount("/", routes![controller::hello, controller::get_user]).launch();
 }
